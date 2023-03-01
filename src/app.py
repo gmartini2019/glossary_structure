@@ -4,6 +4,7 @@ import uvicorn
 import pickle
 from transformers import pipeline, DistilBertTokenizerFast, DistilBertForMaskedLM
 from transformers import AutoTokenizer, AutoModelForMaskedLM
+import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 app = FastAPI()
