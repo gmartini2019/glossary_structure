@@ -1,5 +1,7 @@
 from fastapi import FastAPI, APIRouter, HTTPException
 import Trie
+import pandas as pd
+from collections import defaultdict
 import uvicorn
 import pickle
 from transformers import pipeline, DistilBertTokenizerFast, DistilBertForMaskedLM
@@ -13,15 +15,19 @@ testInit = Trie.Trie_dict()
 with open('../english_dict.pkl', 'rb') as f:
     english_dict = pickle.load(f)
 
+vasu_dict = pd.read_csv('../vasu_df.csv')
+dictionary_vasu = testInit.from_df_to_dict(vasu_dict)
+
 testInit.insert_dict(english_dict)
+testInit.insert_dict(dictionary_vasu)
 
 @app.get('/search/{word}')
 async def search(word: str):
     return testInit.search(word)
 
-@app.get('/fuzzySearch/{word}')
-async def fuzzySearch(word: str):
-    return testInit.fuzzy_search(word)
+@app.get('/fuzzySearch/{word}/{cutoff}')
+async def fuzzySearch(word: str, cutoff: float):
+    return testInit.fuzzy_search(word, cutoff)
 
 @app.post('/insert/{word}/{desc}')
 async def insert(word: str, desc: str):

@@ -47,11 +47,14 @@ class Trie_dict:
     
     def insert_dict(self, dict_obj):
         for key, definition in dict_obj.items():
-            self.insert(key, definition)
+            self.insert(str(key), str(definition))
     
-    def fuzzy_search(self, word, cutoff=0.6):
+    def fuzzy_search(self, word, cutoff):
         results = difflib.get_close_matches(word, self.words(), n=10, cutoff=cutoff)
-        return {result: (self.search(result), difflib.SequenceMatcher(None, word, result).ratio()) for result in results}
+        res = {result: (self.search(result), difflib.SequenceMatcher(None, word, result).ratio()) for result in results}
+        if word in res:
+            return {word: res[word][0]}
+        else: return res
 
     def words(self):
         words = []
@@ -63,4 +66,12 @@ class Trie_dict:
         dfs(self.root, "")
         return words
     
-    
+    def from_df_to_dict(self, df):
+        first_column = df.iloc[:, 0].tolist()
+        second_column = df.iloc[:, 1].tolist()
+        #dict_object = my_dictionary()
+        dict_object = defaultdict()
+        for i in range(len(first_column)):
+            dict_object[first_column[i]]=  second_column[i]
+        
+        return dict_object

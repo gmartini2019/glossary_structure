@@ -7,9 +7,10 @@ def navigate_trie():
     # Prompt the user to enter a search term
     print('Enter the term for which you would like the definition')
     search = input()
+    cutoff = 0.4
     
     # Use the trie data structure to perform a fuzzy search on the search term
-    search_result = requests.get(f'http://127.0.0.1:8000/fuzzySearch/{search}').text
+    search_result = requests.get(f'http://127.0.0.1:8000/fuzzySearch/{search}/{cutoff}').text
     search_obj = json.loads(search_result)
     key_list = list(search_obj)
     list_length = len(search_obj)
@@ -21,8 +22,11 @@ def navigate_trie():
     else:
         i = 1
         for key, val in search_obj.items():
-            print(f'{i}. {key}: {val[0]}')
-            i += 1
+            if len(search_obj) > 1:
+                print(f'{i}. {key}: {val[0]}')
+                i += 1
+            else:
+                print(f'{i}. {key}: {val}')
         
     # Prompt the user to select a search result from the list
     print('If the desired item is in the list, type Y, else N')
