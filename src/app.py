@@ -1,6 +1,7 @@
 from fastapi import FastAPI, APIRouter, HTTPException
 import Trie
 import pandas as pd
+import pretrained
 from collections import defaultdict
 import uvicorn
 import pickle
@@ -41,15 +42,7 @@ async def update(word: str, newDesc: str):
 
 @app.get('/model/{word}')
 def model(word: str):
-    question = f'What could "{word}" mean?'
-    tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-medium")
-    model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium")
-    input_ids = tokenizer.encode(question + tokenizer.eos_token, return_tensors='pt')
-    chat_response = model.generate(input_ids=input_ids, max_length=1000, pad_token_id=tokenizer.eos_token_id)
-
-    chat_response = tokenizer.decode(chat_response[0], skip_special_tokens=True)
-    chat_response = chat_response.replace(question, "")
-    return chat_response
+    return pretrained.model(word)
 
 def main():
     uvicorn.run(app, host='127.0.0.1', port=8000)
