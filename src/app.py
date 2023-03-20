@@ -1,51 +1,32 @@
 from fastapi import FastAPI, APIRouter, HTTPException
-import Trie
+from py2neo import Graph, Node, Relationship, NodeMatch, NodeMatcher
 import pandas as pd
 import pretrained
+import db_methods
 from collections import defaultdict
-import uvicorn
-import pickle
-from transformers import pipeline, DistilBertTokenizerFast, DistilBertForMaskedLM
-from transformers import AutoTokenizer, AutoModelForMaskedLM
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
 
 app = FastAPI()
-testInit = Trie.Trie_dict()
 
-with open('../english_dict.pkl', 'rb') as f:
-    english_dict = pickle.load(f)
-
-vasu_dict = pd.read_csv('../vasu_df.csv')
-dictionary_vasu = testInit.from_df_to_dict(vasu_dict)
-
-testInit.insert_dict(english_dict)
-testInit.insert_dict(dictionary_vasu)
+graph = Graph('bolt://localhost:7687', auth=('neo4j', 'password')) ## can change the url and credentials if using another instance of the database
 
 @app.get('/search/{word}')
 async def search(word: str):
-    return testInit.search(word)
+    return db_methods.search_node_in_graph(graph, word)
 
 @app.get('/fuzzySearch/{word}/{cutoff}')
-async def fuzzySearch(word: str, cutoff: float):
-    return testInit.fuzzy_search(word, cutoff)
+async def fuzzySearch(word: str, cutoff: float, n: int):
+    return db_methods.fuzzy_search(graph, word, cutoff, n)
 
 @app.post('/insert/{word}/{desc}')
 async def insert(word: str, desc: str):
-    testInit.insert(word, desc)
+    db_methods.insert_node(graph, word, desc)
     return {"word": word, "description": desc}
 
 @app.put('/update/{word}/{newDesc}')
 async def update(word: str, newDesc: str):
-    testInit.update(word, newDesc)
+    db_methods.update_description(graph, word, newDesc)
     return {"word": word, "new description": newDesc}
 
 @app.get('/model/{word}')
 def model(word: str):
     return pretrained.model(word)
-
-def main():
-    uvicorn.run(app, host='127.0.0.1', port=8000)
-
-if __name__ == '__main__':
-    main()

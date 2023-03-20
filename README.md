@@ -16,12 +16,19 @@ transformers -> pip install transformers
 pandas -> pip install pandas
 fastapi -> pip install fastapi
 uvicorn -> pip install uvicorn
-torch -> pip3 install torch torchvision
+torch -> pip install torch torchvision
+py2neo -> pip install py2neo
 ```
+
+## Installing Neo4j
+
+For local machine, follow the instructions in `neo4j-local.md`:
+
+For EC2 instance, follow the instructions in `neo4j-ec2.md`:
 
 ## API Usage
 
-The main components that the API uses are in `src` folder, in addition to the `english_dict.pkl` and `vasu_df.csv` files (which are loaded into the trie data structure). Everything else is either experiments with Jupyter Notebooks or unneeded data files.
+The main components that the API uses are in `src` folder, in addition to the `english_dict.pkl` and `vasu_df.csv` files (data that can be loaded). Everything else is either experiments with Jupyter Notebooks or unneeded data files. You will need to first import data using `db_methods` function `init_import(graph, to_import)` - this will persist the data in the neo4j database.
 
 To run, first activate the env created above 
 ```python
@@ -29,10 +36,10 @@ conda activate myenv
 ```
 and navigate to the `src` folder and run:
 ```python
-python app.py
+uvicorn app:app --port 8000
 ```
 
-This will start the server with uvicorn on http://127.0.0.1:8000 -> you can then navigate to http://127.0.0.1:8000/docs to try the API methods.
+This will start the server with uvicorn on http://127.0.0.1:8000 -> you can then navigate to http://127.0.0.1:8000/docs to try the API methods. You can modify the command to bind to a different port and/or host, in addition to allowing it to run in the background with `nohup`. 
 
 Alternatively, you could run `navigation.py` and test a potential user interaction flow with the use of the API. Simply run the following in another terminal tab or window:
 ```python
@@ -41,19 +48,22 @@ python navigation.py
 
 Now going into more details about each file in the `src` folder:
 
-### Trie.py
+### db_methods.py
 
-This file contains the definitions of the TrieNode and Trie classes, which are used to build the Trie data structure. The `app.py` file primarily calls the functions of the `Trie` class. The key function in this file is `fuzzy_search`, as it can be tuned to show the number of results to show for a user: 
+This file contains the implementations of methods we will be using to both insert data into and database as well as query it. The `app.py` file primarily calls the functions of the `db_methods` file. The key function in this file is `fuzzy_search`, as it can be tuned to show the number of results to show for a user: 
 
 ```python
-difflib.get_close_matches(word, self.words(), n=10, cutoff=cutoff)
+get_close_matches_icase(word, get_words_from_graph(graph), n=n, cutoff=cutoff)
 ```
 
-The *n* parameter in `get_close_matches` is the top *n* closest matches and can be set by the business. If you'd like the user to be able to set this parameter, then we can modify the function definition to take in *n* and also modify the api GET method in `app.py` to take in the same parameter.
+The *n* parameter in `get_close_matches_icase` is the top *n* closest matches and can be set by the business. If you'd like the user to be able to set this parameter, then we can modify the function definition to take in *n* and also modify the api GET method in `app.py` to take in the same parameter.
+
+The other two functions to take note of are `init_import(graph, to_import)` and `insert_dict(graph, to_insert)`. 
+**IMPORTANT: use init_import only once to import initial data. If you have more bulk data you'd like to load after that, use the insert_dict function**
 
 ### app.py
 
-This file is where we define the FastAPI application, create an instance of the `Trie` class, load the data from `english_dict.pkl` and `vasu_df.csv` into that instance, and create the REST methods to query the Trie as well as invoke the pretrained model.
+This file is where we define the FastAPI application, and create the REST methods to call `db_methods` functions as well as invoke the pretrained model.
 
 ### pretrained.py
 
