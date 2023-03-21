@@ -50,10 +50,10 @@ Now going into more details about each file in the `src` folder:
 
 ### db_methods.py
 
-This file contains the implementations of methods we will be using to both insert data into and database as well as query it. The `app.py` file primarily calls the functions of the `db_methods` file. The key function in this file is `fuzzy_search`, as it can be tuned to show the number of results to show for a user: 
+This file contains the implementations of methods we will be using to both insert data into and database as well as query it. The `app.py` file primarily calls the functions of the `db_methods` file. The key function in this file is `fuzzy_search_native`, as it can be tuned to show the number of results to show for a user: 
 
 ```python
-get_close_matches_icase(word, get_words_from_graph(graph), n=n, cutoff=cutoff)
+fuzzy_search_native(graph, word, n)
 ```
 
 The *n* parameter in `get_close_matches_icase` is the top *n* closest matches and can be set by the business. If you'd like the user to be able to set this parameter, then we can modify the function definition to take in *n* and also modify the api GET method in `app.py` to take in the same parameter.
