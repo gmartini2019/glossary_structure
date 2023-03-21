@@ -68,3 +68,12 @@ def fuzzy_search(graph, word, cutoff, n):
         return dict(sorted(res.items(), key=lambda item: item[1][1], reverse=True))
     return {word: exact}
 
+
+def fuzzy_search_native(graph, word, n):
+    query = """
+        CALL db.index.fulltext.queryNodes("businessGlossaryIndex", $word, {limit:$n}) YIELD node, score 
+        RETURN node.name, node.description, score
+    """
+    parameters = {"word": word + "~", "n": n}
+    return graph.run(query, parameters=parameters).data()
+

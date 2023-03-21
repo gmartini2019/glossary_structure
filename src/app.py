@@ -13,9 +13,9 @@ graph = Graph('bolt://localhost:7687', auth=('neo4j', 'password')) ## can change
 async def search(word: str):
     return db_methods.search_node_in_graph(graph, word)
 
-@app.get('/fuzzySearch/{word}/{cutoff}')
-async def fuzzySearch(word: str, cutoff: float, n: int):
-    return db_methods.fuzzy_search(graph, word, cutoff, n)
+@app.get('/fuzzySearch/{word}/{n}')
+async def fuzzySearch(word: str, n: int):
+    return db_methods.fuzzy_search_native(graph, word, n)
 
 @app.post('/insert/{word}/{desc}')
 async def insert(word: str, desc: str):
