@@ -2,15 +2,11 @@ from transformers import pipeline, DistilBertTokenizerFast, DistilBertForMaskedL
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
+import openai
 
+openai.api_key = "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"
 
 def model(word):
-    question = f'What could "{word}" mean?'
-    tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-medium")
-    model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium")
-    input_ids = tokenizer.encode(question + tokenizer.eos_token, return_tensors='pt')
-    chat_response = model.generate(input_ids=input_ids, max_length=1000, pad_token_id=tokenizer.eos_token_id)
-
-    chat_response = tokenizer.decode(chat_response[0], skip_special_tokens=True)
-    chat_response = chat_response.replace(question, "")
-    return chat_response
+    prompt = f"Define the column name {word} with a short description and then a longer description in at least 50 words"
+    completion = openai.Completion.create(engine="text-davinci-003", prompt=prompt, max_tokens=1000)
+    return completion.choices[0].text.strip()

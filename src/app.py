@@ -1,8 +1,9 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, responses, APIRouter, HTTPException
 from py2neo import Graph, Node, Relationship, NodeMatch, NodeMatcher
 import pandas as pd
 import pretrained
 import db_methods
+import json
 from collections import defaultdict
 
 app = FastAPI()
@@ -27,6 +28,7 @@ async def update(word: str, newDesc: str):
     db_methods.update_description(graph, word, newDesc)
     return {"word": word, "new description": newDesc}
 
-@app.get('/model/{word}')
+@app.get('/model/{word}', response_class=responses.PlainTextResponse)
 def model(word: str):
-    return pretrained.model(word)
+    definition = pretrained.model(word)
+    return definition
